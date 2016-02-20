@@ -1,0 +1,15 @@
+{
+  "name": "obfero",
+  "version": "0.1.0",
+  "description": "Shows the files modified, added, or deleted in a Git commit.",
+  "main": "cli.js",
+  "bin": {
+    "obfero": "./cli.js"
+  },
+  "author": "Joe Martella",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^1.1.1",
+    "meow": "^3.7.0"
+  }
+}
