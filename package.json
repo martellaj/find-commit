@@ -1,6 +1,6 @@
 {
   "name": "obfero",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Shows the files modified, added, or deleted in a Git commit.",
   "main": "cli.js",
   "bin": {
