@@ -1,4 +1,6 @@
 # obfero
+[![npm version](https://badge.fury.io/js/obfero.svg)](https://badge.fury.io/js/obfero)
+[![js-semistandard-style](https://img.shields.io/badge/code%20style-semistandard-brightgreen.svg?style=flat-square)](https://github.com/Flet/semistandard)
 > Shows the files modified, added, or deleted in a Git commit.
 
 ## Install
