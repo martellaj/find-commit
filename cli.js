@@ -53,7 +53,7 @@ switch (mode) {
 
 /**
  * Saves a commit message SHA into an alias for later use.
- * 
+ *
  * @name save
  */
 function save (alias, sha) {
@@ -64,8 +64,12 @@ function save (alias, sha) {
     console.log(chalk.red.bold('Aliases must be alphanumeric.'));
     return;
   }
-  
+
   jsonfile.readFile(STORAGE, function (error, aliases) {
+    if (error) {
+      // TODO: Handle this error.
+    }
+
     aliases[alias] = sha;
     jsonfile.writeFile(STORAGE, aliases, function (error) {
       if (error) {
@@ -79,15 +83,15 @@ function save (alias, sha) {
 
 /**
  * Finds the branches in which the commit message lives.
- * 
+ *
  * @name find
  */
 function find () {
   if (!cli.input[0]) {
     missingInputError(1);
-    return; 
+    return;
   }
-  
+
   checkForAlias(cli.input[0])
     .then(function (commit) {
       doGitCommand(commit);
@@ -96,13 +100,17 @@ function find () {
 
 /**
  * Lists the aliases the user has created.
- * 
+ *
  * @name list
  */
 function list () {
   jsonfile.readFile(STORAGE, function (error, aliases) {
+    if (error) {
+      // TODO: Handle this error.
+    }
+
     for (var prop in aliases) {
-      if (aliases.hasOwnProperty(prop) && prop != 'cb6b7b52-ad1c-4a4e-a66a-fbc3a0c3b503') {
+      if (aliases.hasOwnProperty(prop) && prop !== 'cb6b7b52-ad1c-4a4e-a66a-fbc3a0c3b503') {
         console.log('* ' + chalk.bold.magenta(prop) + ' => ' + chalk.bold.cyan(aliases[prop]));
       }
     }
@@ -111,7 +119,7 @@ function list () {
 
 /**
  * Determines what the user is trying to do with the app.
- * 
+ *
  * @name getMode
  */
 function getMode () {
@@ -119,7 +127,7 @@ function getMode () {
     return MODE.ERROR;
   } else if (cli.flags.s) {
     return MODE.SAVE;
-  } else if(cli.flags.l) {
+  } else if (cli.flags.l) {
     return MODE.LIST;
   } else {
     return MODE.FIND;
@@ -128,7 +136,7 @@ function getMode () {
 
 /**
  * Prints out an appropriate "missing input" error message for the mode.
- * 
+ *
  * @name missingInputError
  * @param mode The mode the user is in.
  */
@@ -148,14 +156,18 @@ function missingInputError (mode) {
  */
 function checkForAlias (input) {
   const deferred = Q.defer();
-  
+
   let inputInfo = {
     isAlias: false,
     alias: null,
     sha: input
   };
-  
-  jsonfile.readFile(STORAGE, function (err, aliases) {
+
+  jsonfile.readFile(STORAGE, function (error, aliases) {
+    if (error) {
+      // TODO: Handle this error.
+    }
+
     if (aliases[input] !== undefined) {
       inputInfo.isAlias = true;
       inputInfo.alias = input;
@@ -165,20 +177,20 @@ function checkForAlias (input) {
       inputInfo.alias = null;
       inputInfo.sha = input;
     }
-    
+
     deferred.resolve(inputInfo);
   });
-  
+
   return deferred.promise;
 }
 
 /**
  * Does the git command to search for commit in branches.
- * 
+ *
  * @name doGitCommand
  * @param commit An object that determines the value of the CLI input (the SHA and if it was loaded).
  */
-function doGitCommand(commit) {
+function doGitCommand (commit) {
   childProcess.exec('git branch -r --contains ' + commit.sha, function (error, stdout, stderr) {
     if (error) {
       if (stderr.indexOf('malformed')) {
@@ -192,11 +204,11 @@ function doGitCommand(commit) {
       var branches = stdout.split('\n');
 
       if (commit.isAlias) {
-        console.log('Branches that contain commit ' + chalk.magenta.bold(commit.alias) + ' (' + chalk.cyan.bold(commit.sha) + '):')
+        console.log('Branches that contain commit ' + chalk.magenta.bold(commit.alias) + ' (' + chalk.cyan.bold(commit.sha) + '):');
       } else {
         console.log('Branches that contain the commit (' + chalk.cyan.bold(commit.sha) + '):');
       }
-      
+
       branches.forEach(branch => {
         if (branch !== '') {
           console.log('   * ' + chalk.green.bold(branch.trim()));
