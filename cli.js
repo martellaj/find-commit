@@ -5,8 +5,10 @@ const childProcess = require('child_process');
 const chalk = require('chalk');
 const jsonfile = require('jsonfile');
 const meow = require('meow');
+const path = require('path');
+const Q = require('q');
 
-const STORAGE = './alias-storage.json';
+const STORAGE = path.join(__dirname, '/alias-storage.json');
 
 const cli = meow(`
 	Usage
@@ -50,7 +52,7 @@ function save (alias, sha) {
     return;
   }
   
-  jsonfile.readFile(STORAGE, function (err, aliases) {
+  jsonfile.readFile(STORAGE, function (error, aliases) {
     aliases[alias] = sha;
     jsonfile.writeFile(STORAGE, aliases, function (error) {
       if (error) {
@@ -73,8 +75,10 @@ function find () {
     return; 
   }
   
-  let commit = checkForAlias(cli.input[0]);
-  doGitCommand(commit);
+  checkForAlias(cli.input[0])
+    .then(function (commit) {
+      doGitCommand(commit);
+    });
 }
 
 /**
@@ -111,15 +115,29 @@ function missingInputError (mode) {
  * Checks if input is a valid alias or a commit message SHA.
  */
 function checkForAlias (input) {
+  const deferred = Q.defer();
+  
   let inputInfo = {
     isAlias: false,
     alias: null,
     sha: input
   };
   
-  // TODO: Actually do lookup.
+  jsonfile.readFile(STORAGE, function (err, aliases) {
+    if (aliases[input] !== undefined) {
+      inputInfo.isAlias = true;
+      inputInfo.alias = input;
+      inputInfo.sha = aliases[input];
+    } else {
+      inputInfo.isAlias = false;
+      inputInfo.alias = null;
+      inputInfo.sha = input;
+    }
+    
+    deferred.resolve(inputInfo);
+  });
   
-  return inputInfo;
+  return deferred.promise;
 }
 
 /**
