@@ -2,8 +2,11 @@
 'use strict';
 
 const childProcess = require('child_process');
-const meow = require('meow');
 const chalk = require('chalk');
+const jsonfile = require('jsonfile');
+const meow = require('meow');
+
+const STORAGE = './alias-storage.json';
 
 const cli = meow(`
 	Usage
@@ -23,7 +26,7 @@ let mode = getMode();
 // Perform the operation based on the mode.
 switch (mode) {
   case 0:
-    save();
+    save(cli.flags.s, cli.input[0]);
     break;
   case 1:
     find();
@@ -38,8 +41,25 @@ switch (mode) {
  * 
  * @name save
  */
-function save () {
-  // TODO: Actually save something.
+function save (alias, sha) {
+  if (!sha) {
+    missingInputError(0);
+    return;
+  } else if (!alias.match(/^([0-9]|[a-z])+([0-9a-z]+)$/i)) {
+    console.log(chalk.red.bold('Aliases must be alphanumeric.'));
+    return;
+  }
+  
+  jsonfile.readFile(STORAGE, function (err, aliases) {
+    aliases[alias] = sha;
+    jsonfile.writeFile(STORAGE, aliases, function (error) {
+      if (error) {
+        console.log(chalk.red.bold('Unable to save that alias.'));
+      } else {
+        console.log(chalk.green.bold('Successfully saved that alias.'));
+      }
+    });
+  });
 }
 
 /**
