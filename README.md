@@ -26,6 +26,7 @@ Use the `-l` or `--list` flag to list all of the aliases you've saved and their 
 The default behavior of *find-commit* is to search your repository's branches for the supplied commit (either an alias or a raw SHA value).
 
 `$ find-commit <alias>`
+
 `$ find-commit <commit-sha>`
 
 ## Acknowledgements
