@@ -4,7 +4,7 @@
 
 > Searches the repository's branches for the supplied commit.
 
-![](find-commit.gif)
+![](https://raw.githubusercontent.com/martellaj/find-commit/master/find-commit.gif)
 
 ## Install
 `$ npm install --save find-commit`
