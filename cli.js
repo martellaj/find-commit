@@ -10,6 +10,13 @@ const Q = require('q');
 
 const STORAGE = path.join(__dirname, '/alias-storage.json');
 
+const MODE = {
+  ERROR: -1,
+  SAVE: 0,
+  FIND: 1,
+  LIST: 2
+};
+
 const cli = meow(`
 	Save commit as alias
     $ find-commit -s <alias> <commit-sha>
@@ -19,7 +26,8 @@ const cli = meow(`
     $ find-commit <alias>
 `, {
   alias: {
-    s: 'save'
+    s: 'save',
+    l: 'list'
   }
 });
 
@@ -27,13 +35,16 @@ let mode = getMode();
 
 // Perform the operation based on the mode.
 switch (mode) {
-  case -1:
+  case MODE.ERROR:
     break;
-  case 0:
+  case MODE.SAVE:
     save(cli.flags.s, cli.input[0]);
     break;
-  case 1:
+  case MODE.FIND:
     find();
+    break;
+  case MODE.LIST:
+    list();
     break;
   default:
     find();
@@ -60,7 +71,7 @@ function save (alias, sha) {
       if (error) {
         console.log(chalk.red.bold('Unable to save that alias.'));
       } else {
-        console.log(chalk.green.bold('Successfully saved that alias.'));
+        console.log(chalk.green.bold('Successfully saved ' + chalk.bold.cyan(sha) + ' as "' + alias + '".'));
       }
     });
   });
@@ -84,15 +95,34 @@ function find () {
 }
 
 /**
+ * Lists the aliases the user has created.
+ * 
+ * @name list
+ */
+function list () {
+  jsonfile.readFile(STORAGE, function (error, aliases) {
+    for (var prop in aliases) {
+      if (aliases.hasOwnProperty(prop) && prop != 'cb6b7b52-ad1c-4a4e-a66a-fbc3a0c3b503') {
+        console.log('* ' + chalk.bold.magenta(prop) + ' => ' + chalk.bold.cyan(aliases[prop]));
+      }
+    }
+  });
+}
+
+/**
  * Determines what the user is trying to do with the app.
  * 
  * @name getMode
  */
 function getMode () {
-  if (cli.flags.s) {
-    return 0;
+  if (cli.flags.s && cli.flags.l) {
+    return MODE.ERROR;
+  } else if (cli.flags.s) {
+    return MODE.SAVE;
+  } else if(cli.flags.l) {
+    return MODE.LIST;
   } else {
-    return 1;
+    return MODE.FIND;
   }
 }
 
@@ -104,11 +134,11 @@ function getMode () {
  */
 function missingInputError (mode) {
   switch (mode) {
-    case 0:
-      console.log(chalk.red('Please specify both an alias and a commit message SHA.'));
+    case MODE.SAVE:
+      console.log(chalk.red.bold('Please specify both an alias and a commit message SHA.'));
       break;
-    case 1:
-      console.log(chalk.red('Please specify an alias or a commit message SHA.'));
+    case MODE.FIND:
+      console.log(chalk.red.bold('Please specify an alias or a commit message SHA.'));
       break;
   }
 }
@@ -153,15 +183,20 @@ function doGitCommand(commit) {
     if (error) {
       if (stderr.indexOf('malformed')) {
         if (commit.isAlias) {
-          console.log(chalk.bold.red('The commit assigned to "' + commit.alias + '" (' + commit.sha + ') was not found in this repository.'));
+          console.log(chalk.bold.red('The commit ' + chalk.bold.magenta(commit.alias) + ' (' + chalk.bold.cyan(commit.sha) + ') was not found in this repository.'));
         } else {
-          console.log(chalk.bold.red('The commit (' + commit.sha + ') was not found in this repository.'));
+          console.log(chalk.bold.red('The commit (' + chalk.bold.cyan(commit.sha) + ') was not found in this repository.'));
         }
       }
     } else {
       var branches = stdout.split('\n');
 
-      console.log('Branches that contain commit ' + chalk.cyan.bold(commit.sha) + ':');
+      if (commit.isAlias) {
+        console.log('Branches that contain commit ' + chalk.magenta.bold(commit.alias) + ' (' + chalk.cyan.bold(commit.sha) + '):')
+      } else {
+        console.log('Branches that contain the commit (' + chalk.cyan.bold(commit.sha) + '):');
+      }
+      
       branches.forEach(branch => {
         if (branch !== '') {
           console.log('   * ' + chalk.green.bold(branch.trim()));
