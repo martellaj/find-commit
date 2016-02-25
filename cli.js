@@ -11,12 +11,12 @@ const Q = require('q');
 const STORAGE = path.join(__dirname, '/alias-storage.json');
 
 const cli = meow(`
-	Usage
-    $ find-commit <commit-sha>
+	Save commit as alias
+    $ find-commit -s <alias> <commit-sha>
 
-	Examples
-    $ find-commit 88990a5689f983f461f7934a42d5c689d0d9b4de
-    $ find-commit 88990a
+	Look for commit in branches
+    $ find-commit <commit-sha>
+    $ find-commit <alias>
 `, {
   alias: {
     s: 'save'
@@ -27,6 +27,8 @@ let mode = getMode();
 
 // Perform the operation based on the mode.
 switch (mode) {
+  case -1:
+    break;
   case 0:
     save(cli.flags.s, cli.input[0]);
     break;
@@ -106,7 +108,7 @@ function missingInputError (mode) {
       console.log(chalk.red('Please specify both an alias and a commit message SHA.'));
       break;
     case 1:
-      console.log(chalk.red('Please specify a saved alias or a commit message SHA.'));
+      console.log(chalk.red('Please specify an alias or a commit message SHA.'));
       break;
   }
 }
@@ -151,18 +153,18 @@ function doGitCommand(commit) {
     if (error) {
       if (stderr.indexOf('malformed')) {
         if (commit.isAlias) {
-          console.log(chalk.bold.red('The ' + commit.alias + ' commit was not found in this repository.'));
+          console.log(chalk.bold.red('The commit assigned to "' + commit.alias + '" (' + commit.sha + ') was not found in this repository.'));
         } else {
-          console.log(chalk.bold.red('The commit of ' + commit.sha + ' was not found in this repository.'));
+          console.log(chalk.bold.red('The commit (' + commit.sha + ') was not found in this repository.'));
         }
       }
     } else {
       var branches = stdout.split('\n');
 
-      console.log('Branches that contain commit ' + commit.sha + ':');
+      console.log('Branches that contain commit ' + chalk.cyan.bold(commit.sha) + ':');
       branches.forEach(branch => {
         if (branch !== '') {
-          console.log(chalk.green(branch));
+          console.log('   * ' + chalk.green.bold(branch.trim()));
         }
       });
     }
