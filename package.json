@@ -1,7 +1,7 @@
 {
   "name": "find-commit",
   "version": "0.1.0",
-  "description": "Lists what branches the supplied commit currently lives in.",
+  "description": "Searches the repository's branches for the supplied commit.",
   "main": "cli.js",
   "bin": {
     "find-commit": "./cli.js"
