@@ -1,10 +1,10 @@
 {
-  "name": "obfero",
-  "version": "0.1.2",
-  "description": "Shows the files modified, added, or deleted in a Git commit.",
+  "name": "find-commit",
+  "version": "0.1.0",
+  "description": "Lists what branches the supplied commit currently lives in.",
   "main": "cli.js",
   "bin": {
-    "obfero": "./cli.js"
+    "find-commit": "./cli.js"
   },
   "author": "Joe Martella",
   "license": "MIT",
