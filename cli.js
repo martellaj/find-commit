@@ -7,24 +7,126 @@ const chalk = require('chalk');
 
 const cli = meow(`
 	Usage
-    $ obfero <commit-sha>
+    $ find-commit <commit-sha>
 
 	Examples
-    $ obfero 88990a5689f983f461f7934a42d5c689d0d9b4de
-    $ obfero 88990a
-`);
+    $ find-commit 88990a5689f983f461f7934a42d5c689d0d9b4de
+    $ find-commit 88990a
+`, {
+  alias: {
+    s: 'save'
+  }
+});
 
-if (!cli.input[0]) {
-  console.log(chalk.red('Please specify a commit message SHA to check out.'));
-} else {
-  childProcess.exec('git diff-tree --no-commit-id --name-status -r ' + cli.input[0], function (error, stdout, stderr) {
+let mode = getMode();
+
+// Perform the operation based on the mode.
+switch (mode) {
+  case 0:
+    save();
+    break;
+  case 1:
+    find();
+    break;
+  default:
+    find();
+    break;
+}
+
+/**
+ * Saves a commit message SHA into an alias for later use.
+ * 
+ * @name save
+ */
+function save () {
+  // TODO: Actually save something.
+}
+
+/**
+ * Finds the branches in which the commit message lives.
+ * 
+ * @name find
+ */
+function find () {
+  if (!cli.input[0]) {
+    missingInputError(1);
+    return; 
+  }
+  
+  let commit = checkForAlias(cli.input[0]);
+  doGitCommand(commit);
+}
+
+/**
+ * Determines what the user is trying to do with the app.
+ * 
+ * @name getMode
+ */
+function getMode () {
+  if (cli.flags.s) {
+    return 0;
+  } else {
+    return 1;
+  }
+}
+
+/**
+ * Prints out an appropriate "missing input" error message for the mode.
+ * 
+ * @name missingInputError
+ * @param mode The mode the user is in.
+ */
+function missingInputError (mode) {
+  switch (mode) {
+    case 0:
+      console.log(chalk.red('Please specify both an alias and a commit message SHA.'));
+      break;
+    case 1:
+      console.log(chalk.red('Please specify a saved alias or a commit message SHA.'));
+      break;
+  }
+}
+
+/**
+ * Checks if input is a valid alias or a commit message SHA.
+ */
+function checkForAlias (input) {
+  let inputInfo = {
+    isAlias: false,
+    alias: null,
+    sha: input
+  };
+  
+  // TODO: Actually do lookup.
+  
+  return inputInfo;
+}
+
+/**
+ * Does the git command to search for commit in branches.
+ * 
+ * @name doGitCommand
+ * @param commit An object that determines the value of the CLI input (the SHA and if it was loaded).
+ */
+function doGitCommand(commit) {
+  childProcess.exec('git branch -r --contains ' + commit.sha, function (error, stdout, stderr) {
     if (error) {
-      if (error) {
-        console.log(chalk.red(stderr));
+      if (stderr.indexOf('malformed')) {
+        if (commit.isAlias) {
+          console.log(chalk.bold.red('The ' + commit.alias + ' commit was not found in this repository.'));
+        } else {
+          console.log(chalk.bold.red('The commit of ' + commit.sha + ' was not found in this repository.'));
+        }
       }
     } else {
-      console.log(stdout);
+      var branches = stdout.split('\n');
+
+      console.log('Branches that contain commit ' + commit.sha + ':');
+      branches.forEach(branch => {
+        if (branch !== '') {
+          console.log(chalk.green(branch));
+        }
+      });
     }
   });
 }
-
