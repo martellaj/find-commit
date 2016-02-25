@@ -18,10 +18,13 @@ const MODE = {
 };
 
 const cli = meow(`
-	Save commit as alias
+	Save commit as an alias
     $ find-commit -s <alias> <commit-sha>
+    
+  List saved aliases
+    $ find-commit -l
 
-	Look for commit in branches
+	Search for commit in branches
     $ find-commit <commit-sha>
     $ find-commit <alias>
 `, {
