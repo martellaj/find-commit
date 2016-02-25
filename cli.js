@@ -78,7 +78,7 @@ function save (alias, sha) {
       if (error) {
         console.log(chalk.red.bold('Unable to save that alias.'));
       } else {
-        console.log(chalk.green.bold('Successfully saved ' + chalk.bold.cyan(sha) + ' as "' + alias + '".'));
+        console.log(chalk.green.bold('Successfully saved ' + chalk.bold.cyan(sha) + ' as ' + chalk.bold.magenta(alias) + '.'));
       }
     });
   });
