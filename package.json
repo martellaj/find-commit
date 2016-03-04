@@ -1,6 +1,6 @@
 {
   "name": "find-commit",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Searches the repository's branches for the supplied commit.",
   "main": "cli.js",
   "bin": {
