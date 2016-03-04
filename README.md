@@ -28,11 +28,11 @@ Use the `-l` or `--list` flag to list all of the aliases you've saved and their 
 `$ find-commit -l`
 
 ### Search for commit in branches
-The default behavior of *find-commit* is to search your repository's branches for the supplied commit (either an alias or a raw SHA value).
+The default behavior of *find-commit* is to search your repository's branches for the supplied commit (either an alias or a raw SHA value). Additionally, you can supply a branch query that will force the operation to only return branches that contain the query and your commit.
 
-`$ find-commit <alias>`
+`$ find-commit <alias> [branch-query]`
 
-`$ find-commit <commit-sha>`
+`$ find-commit <commit-sha> [branch-query]`
 
 ## Acknowledgements
 * [*meow*](https://github.com/sindresorhus/meow) by [Sindre Sorhus](https://github.com/sindresorhus)  - A CLI app helper.

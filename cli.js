@@ -23,7 +23,7 @@ const cli = meow(`
     $ find-commit -s <alias> <commit-sha>
     
   Delete a saved alias
-    $ find-commit -d <alias>
+    $ find-commit -d <alias> [branch-query]
     
   List saved aliases
     $ find-commit -l
@@ -49,7 +49,7 @@ switch (mode) {
     save(cli.flags.s, cli.input[0]);
     break;
   case MODE.FIND:
-    find();
+    find(cli.input[0], cli.input[1]);
     break;
   case MODE.LIST:
     list();
@@ -99,15 +99,15 @@ function save (alias, sha) {
  *
  * @name find
  */
-function find () {
-  if (!cli.input[0]) {
+function find (targetCommit, targetBranch) {
+  if (!targetCommit) {
     missingInputError(MODE.FIND);
     return;
   }
 
-  checkForAlias(cli.input[0])
+  checkForAlias(targetCommit)
     .then(function (commit) {
-      doGitCommand(commit);
+      doGitCommand(commit, targetBranch);
     });
 }
 
@@ -248,8 +248,9 @@ function checkForAlias (input) {
  *
  * @name doGitCommand
  * @param commit An object that determines the value of the CLI input (the SHA and if it was loaded).
+ * @param targetBranch The branch that the user is checking for.
  */
-function doGitCommand (commit) {
+function doGitCommand (commit, targetBranch) {
   childProcess.exec('git branch -r --contains ' + commit.sha, function (error, stdout, stderr) {
     if (error) {
       if (stderr.indexOf('malformed')) {
@@ -270,7 +271,12 @@ function doGitCommand (commit) {
 
       branches.forEach(branch => {
         if (branch !== '') {
-          console.log('   * ' + chalk.green.bold(branch.trim()));
+          
+          if (!targetBranch) {
+            console.log('   * ' + chalk.green.bold(branch.trim()));
+          } else if (branch.trim().indexOf(targetBranch) > -1) {
+            console.log('   * ' + chalk.green.bold(branch.trim()));            
+          }
         }
       });
     }
