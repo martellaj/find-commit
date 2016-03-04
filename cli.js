@@ -14,7 +14,8 @@ const MODE = {
   ERROR: -1,
   SAVE: 0,
   FIND: 1,
-  LIST: 2
+  LIST: 2,
+  DELETE: 3
 };
 
 const cli = meow(`
@@ -30,7 +31,8 @@ const cli = meow(`
 `, {
   alias: {
     s: 'save',
-    l: 'list'
+    l: 'list',
+    d: 'delete'
   }
 });
 
@@ -49,6 +51,9 @@ switch (mode) {
   case MODE.LIST:
     list();
     break;
+  case MODE.DELETE:
+    deleteAlias(cli.flags.d);
+    break;
   default:
     find();
     break;
@@ -60,8 +65,10 @@ switch (mode) {
  * @name save
  */
 function save (alias, sha) {
+  alias = alias.toString();
+
   if (!sha) {
-    missingInputError(0);
+    missingInputError(MODE.SAVE);
     return;
   } else if (!alias.match(/^([0-9]|[a-z])+([0-9a-z]+)$/i)) {
     console.log(chalk.red.bold('Aliases must be alphanumeric.'));
@@ -91,7 +98,7 @@ function save (alias, sha) {
  */
 function find () {
   if (!cli.input[0]) {
-    missingInputError(1);
+    missingInputError(MODE.FIND);
     return;
   }
 
@@ -112,10 +119,51 @@ function list () {
       // TODO: Handle this error.
     }
 
-    for (var prop in aliases) {
+    let hasAlias = false;
+
+    for (let prop in aliases) {
       if (aliases.hasOwnProperty(prop) && prop !== 'cb6b7b52-ad1c-4a4e-a66a-fbc3a0c3b503') {
+        hasAlias = true;
         console.log('* ' + chalk.bold.magenta(prop) + ' => ' + chalk.bold.cyan(aliases[prop]));
       }
+    }
+    
+    if (!hasAlias) {
+      console.log(chalk.bold.yellow('No saved aliases.'));
+    }
+  });
+}
+
+/**
+ * Deletes the alias specified.
+ * 
+ * @name deleteAlias
+ */
+function deleteAlias (alias) {
+  if (typeof alias === 'boolean' || alias.toString().trim() === '') {
+    missingInputError(MODE.DELETE);
+    return;
+  }
+  
+  jsonfile.readFile(STORAGE, function (error, aliases) {
+    if (error) {
+      // TODO: Handle this error.
+    }
+
+    let aliasToDelete = alias;
+
+    if (aliases[aliasToDelete] !== undefined) {
+      delete aliases[aliasToDelete];
+
+      jsonfile.writeFile(STORAGE, aliases, function (error) {
+        if (error) {
+          console.log(chalk.red.bold('Unable to save that alias.'));
+        } else {
+          console.log(chalk.green.bold('Successfully deleted ' + chalk.bold.magenta(alias) + '.'));
+        }
+      });
+    } else {
+      console.log(chalk.bold.yellow('Did not find a matching alias to delete.'));      
     }
   });
 }
@@ -126,12 +174,14 @@ function list () {
  * @name getMode
  */
 function getMode () {
-  if (cli.flags.s && cli.flags.l) {
+  if (Object.keys(cli.flags).length > 2) {
     return MODE.ERROR;
   } else if (cli.flags.s) {
     return MODE.SAVE;
   } else if (cli.flags.l) {
     return MODE.LIST;
+  } else if (cli.flags.d) {
+    return MODE.DELETE;
   } else {
     return MODE.FIND;
   }
@@ -150,6 +200,9 @@ function missingInputError (mode) {
       break;
     case MODE.FIND:
       console.log(chalk.red.bold('Please specify an alias or a commit message SHA.'));
+      break;
+    case MODE.DELETE:
+      console.log(chalk.red.bold('Please specify an alias to delete.')); 
       break;
   }
 }
