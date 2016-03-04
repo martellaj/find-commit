@@ -68,12 +68,12 @@ switch (mode) {
  * @name save
  */
 function save (alias, sha) {
-  alias = alias.toString();
+  alias = alias.toString().trim();
 
   if (!sha) {
     missingInputError(MODE.SAVE);
     return;
-  } else if (!alias.match(/^([0-9]|[a-z])+([0-9a-z]+)$/i)) {
+  } else if (!alias.match(/^[a-zA-Z0-9-_]+$/)) {
     console.log(chalk.red.bold('Aliases must be alphanumeric.'));
     return;
   }
