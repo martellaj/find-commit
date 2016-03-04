@@ -22,6 +22,9 @@ const cli = meow(`
 	Save commit as an alias
     $ find-commit -s <alias> <commit-sha>
     
+  Delete a saved alias
+    $ find-commit -d <alias>
+    
   List saved aliases
     $ find-commit -l
 

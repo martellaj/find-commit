@@ -17,6 +17,11 @@ Saving, using the `-s` or `--save` flag, saves the SHA value into an alias to us
 
 `$ find-commit -s <alias> <commit-sha>`
 
+### Delete a saved alias
+If you're no longer interested in a particular commit, delete it from your list of saved aliases with the `-d` flag.
+
+`$ find-commit -d <alias>`
+
 ### List saved aliases
 Use the `-l` or `--list` flag to list all of the aliases you've saved and their values.
 
