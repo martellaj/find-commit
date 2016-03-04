@@ -10,7 +10,7 @@
 `$ npm install --save find-commit`
 
 ## Usage
-There are 3 operations possible with *find-commit*: **save**, **list**, and **search**.
+There are 4 operations possible with *find-commit*: **save**, **delete**, **list**, and **search**.
 
 ### Save commit as an alias
 Saving, using the `-s` or `--save` flag, saves the SHA value into an alias to use later on.
